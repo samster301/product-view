@@ -2,6 +2,7 @@ package com.wipro.productview.controllers;
 
 import com.wipro.productview.model.ProductInfo;
 import com.wipro.productview.model.ProductPrice;
+import com.wipro.productview.model.Promotion;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
@@ -29,46 +30,48 @@ public class ProductViewController {
     @Autowired
     private DiscoveryClient discoveryClient;
 
-    @GetMapping(value= "/view/swagger-ui")
-    public ModelAndView redirectToSwagger(){
+    @GetMapping(value = "/view/swagger-ui")
+    public ModelAndView redirectToSwagger() {
         return new ModelAndView("redirect:/swagger-ui.html");
     }
 
 
     @ApiOperation(value = "Display complete product information", response = ProductInfo.class)
     @GetMapping("/view/{productId}")
-    public ProductInfo getProductInformation(@PathVariable Long productId) throws RestClientException, IOException{
+    public ProductInfo getProductInformation(@PathVariable Long productId) throws RestClientException, IOException {
         List<ServiceInstance> instaces = discoveryClient.getInstances("zuul-gateway");
         ServiceInstance serviceInstance = instaces.get(0);
 
         String baseUrl = serviceInstance.getUri().toString();
-        baseUrl=baseUrl+"/products";
+        baseUrl = baseUrl + "/products/";
 
         RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<ProductPrice> response = null;
-
         ProductInfo productInfo = new ProductInfo();
 
 //Calling Price Service
 
-        String priceUrl = baseUrl+"/price/"+productId+"/list";
-        response = restTemplate.exchange(priceUrl, HttpMethod.GET,getHeaders(),ProductPrice.class);
-        productInfo.setPriceId(response.getBody().getPriceId());
-        productInfo.setPrice(response.getBody().getPrice());
-        productInfo.setCurrency(response.getBody().getCurrency());
+
+        ResponseEntity<ProductPrice> priceResponse = null;
+        String priceUrl = baseUrl + "price/" + productId + "/list";
+        priceResponse = restTemplate.exchange(priceUrl, HttpMethod.GET, getHeaders(), ProductPrice.class);
+        productInfo.setPriceId(priceResponse.getBody().getPriceId());
+        productInfo.setPrice(priceResponse.getBody().getPrice());
+        productInfo.setCurrency(priceResponse.getBody().getCurrency());
 
 //Calling Product Service
 
 
-
 //Calling Promotion Service
 
-
+        ResponseEntity<Promotion> promotionResponse = null;
+        String promotionUrl = baseUrl + productId + "/promotions";
+        promotionResponse = restTemplate.exchange(promotionUrl, HttpMethod.GET, getHeaders(), Promotion.class);
+        productInfo.setPromotionId(promotionResponse.getBody().getPromotionId());
+        productInfo.setPromoCode(promotionResponse.getBody().getPromoCode());
+        productInfo.setPromoDiscount(promotionResponse.getBody().getPromoDiscount());
+        productInfo.setPromoDescription(promotionResponse.getBody().getPromoDescription());
 
 //Calling Inventory Service
-
-
-
 
 
         return productInfo;
