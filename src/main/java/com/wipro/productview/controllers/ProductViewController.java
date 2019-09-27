@@ -1,5 +1,6 @@
 package com.wipro.productview.controllers;
 
+import com.wipro.productview.model.Inventory;
 import com.wipro.productview.model.ProductInfo;
 import com.wipro.productview.model.ProductPrice;
 import com.wipro.productview.model.Promotion;
@@ -73,7 +74,14 @@ public class ProductViewController {
 
 //Calling Inventory Service
 
-
+        ResponseEntity<Inventory> inventoryResponse = null;
+        String inventoryUrl = baseUrl + "inventory/" + productId + "/list";
+        inventoryResponse = restTemplate.exchange(inventoryUrl, HttpMethod.GET, getHeaders(), Inventory.class);
+        productInfo.setInventoryId(inventoryResponse.getBody().getInventoryId());
+        productInfo.setQty(inventoryResponse.getBody().getQty());
+        productInfo.setPackZone(inventoryResponse.getBody().getPackZone());
+        productInfo.setPickZone(inventoryResponse.getBody().getPickZone());
+        productInfo.setShippingArea(inventoryResponse.getBody().getShippingArea());
         return productInfo;
     }
 
