@@ -1,9 +1,6 @@
 package com.wipro.productview.controllers;
 
-import com.wipro.productview.model.Inventory;
-import com.wipro.productview.model.ProductInfo;
-import com.wipro.productview.model.ProductPrice;
-import com.wipro.productview.model.Promotion;
+import com.wipro.productview.model.*;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
@@ -44,6 +41,7 @@ public class ProductViewController {
         ServiceInstance serviceInstance = instaces.get(0);
 
         String baseUrl = serviceInstance.getUri().toString();
+        System.out.println(baseUrl);
         baseUrl = baseUrl + "/products/";
 
         RestTemplate restTemplate = new RestTemplate();
@@ -60,6 +58,13 @@ public class ProductViewController {
         productInfo.setCurrency(priceResponse.getBody().getCurrency());
 
 //Calling Product Service
+
+        ResponseEntity<Product> productResponse = null;
+        String productUrl = baseUrl + "info/" + productId;
+        productResponse = restTemplate.exchange(productUrl, HttpMethod.GET, getHeaders(), Product.class);
+        productInfo.setProductId(productResponse.getBody().getId());
+        productInfo.setProductDescription(productResponse.getBody().getProductDescription());
+        productInfo.setProductName(productResponse.getBody().getProductName());
 
 
 //Calling Promotion Service
