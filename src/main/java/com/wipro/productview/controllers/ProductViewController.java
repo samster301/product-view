@@ -39,7 +39,8 @@ public class ProductViewController {
     public ProductInfo getProductInformation(@PathVariable Long productId) throws RestClientException, IOException {
         List<ServiceInstance> instaces = discoveryClient.getInstances("zuul-gateway");
         ServiceInstance serviceInstance = instaces.get(0);
-
+        for(int i=0; i <instaces.size();i++)
+            System.out.println(instaces.get(i));
         String baseUrl = serviceInstance.getUri().toString();
         System.out.println(baseUrl);
         baseUrl = baseUrl + "/products/";
